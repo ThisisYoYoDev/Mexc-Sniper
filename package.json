@@ -1,0 +1,19 @@
+{
+  "name": "mexc",
+  "version": "1.0.0",
+  "main": "test.js",
+  "scripts": {
+    "start": "node test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "description": "",
+  "dependencies": {
+    "crypto-js": "^4.2.0",
+    "dotenv": "^16.4.7",
+    "mexc-api-sdk": "^1.0.3",
+    "mexc-sdk": "file:mexc-api-sdk/dist/js/mexc-sdk@1.0.0.jsii.tgz"
+  }
+}
