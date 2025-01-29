@@ -95,9 +95,6 @@ function sniperBuyCaller(symbol, priceInUsdtToBuy) {
     return;
   }
 
-  symbol.sniperAlreadyBought = true;
-  symbol.sniper = false;
-
   const quantity = priceInUsdtToBuy / symbol.lastBuyPrice;
   console.log(`Buying ${quantity} of ${symbol.s} at ${symbol.lastBuyPrice} USDT`);
 
@@ -109,8 +106,13 @@ function sniperBuyCaller(symbol, priceInUsdtToBuy) {
       {
         price: symbol.lastBuyPrice,
         quantity: quantity,
+        timeInForce: 'IOC',
       }
     );
+
+    symbol.sniperAlreadyBought = true;
+    symbol.sniper = false;
+
     console.log("buyOrder:", data);
   } catch (e) {
     console.error(e);
@@ -129,7 +131,7 @@ const moneyToFollow = [
     "lastBuyPrice": null,
     "lastSellPrice": null,
     "lastBuyQuantity": null,
-    "sniper": true,
+    "sniper": false,
     "sniperAlreadyBought": false,
   },
 ]
@@ -155,8 +157,9 @@ setInterval(() => {
 
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
+  console.log("Verbose data", JSON.stringify(data));
 
-  if (data.msg === 'PING') {
+  if (data.msg === 'PONG') {
     console.log(`Server alive at ${new Date()}`);
     return;
   }
@@ -184,19 +187,19 @@ ws.onmessage = (event) => {
   if (symbol) {
     console.log(`${symbol.s} - ${JSON.stringify(data.d.deals[0])}`);
     symbol.lastBuyQuantity = data.d.deals[0].v;
-    if (data.d.deals[0].S === 1) // S = 1 is buy
+    if (data.d.deals[0].S === 1) { // S = 1 is buy
       symbol.lastBuyPrice = data.d.deals[0].p;
-    else if (data.d.deals[0].S === 2) // S = 2 is sell
+    } else if (data.d.deals[0].S === 2) // S = 2 is sell
       symbol.lastSellPrice = data.d.deals[0].p;
   }
 
   if (symbol && symbol.sniper === true && symbol.lastBuyPrice) {
     console.log(`Sniper mode activated for ${symbol.s}`);
-    symbol.lastBuyPrice = symbol.lastBuyPrice - 1;
     sniperBuyCaller(symbol, 50);
   }
 };
 
 ws.onclose = () => {
   console.log(`Connection closed at ${new Date()}`);
+  process.exit(1);
 };
